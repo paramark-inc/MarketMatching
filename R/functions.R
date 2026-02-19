@@ -668,7 +668,9 @@ best_matches <- function(data=NULL, markets_to_be_matched=NULL, id_variable=NULL
 #' @importFrom scales comma
 #' @import Boom
 
-inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NULL, end_post_period=NULL, alpha=0.05, prior_level_sd=0.01, control_matches=5, analyze_betas=FALSE, nseasons=NULL){
+inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NULL, end_post_period=NULL, 
+                      alpha=0.05, prior_level_sd=0.01, control_matches=5, analyze_betas=FALSE, 
+                      nseasons=NULL, seed=NULL, treatment.end=NULL){
 
   ## use nulling to avoid CRAN notes
   id_var <- NULL
@@ -764,6 +766,9 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
   cat(paste0("\tMatching (pre) Period Start Date: ", MatchingStartDate, "\n"))
   cat(paste0("\tMatching (pre) Period End Date: ", MatchingEndDate, "\n"))
   cat(paste0("\tPost Period Start Date: ", post_period_start_date, "\n"))
+  if (is.null(treatment.end)){
+    cat(paste0("\tEnd of Treatment Period: ", reatment.end, "\n"))
+  }
   cat(paste0("\tPost Period End Date: ", post_period_end_date, "\n"))
   cat("\n")
   cat(paste0("\tbsts parameters: \n"))
@@ -780,8 +785,11 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
   ## run the inference
   pre.period <- c(as.Date(MatchingStartDate), as.Date(MatchingEndDate))
   post.period <- c(as.Date(post_period_start_date), as.Date(post_period_end_date))
-  set.seed(2015)
-  impact <- CausalImpact(ts, pre.period, post.period, alpha=alpha, model.args=bsts_modelargs)
+  if (is.null(seed)) {
+    seed <- 2015
+  }
+  set.seed(seed)
+  impact <- CausalImpact(ts, pre.period, post.period, alpha=alpha, model.args=bsts_modelargs, treatment.end=treatment.end)
 
   if(analyze_betas==TRUE){
     ## estimate betas for different values of prior sd
@@ -795,7 +803,7 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
       } else{
         args <- list(prior.level.sd=sd, nseasons=nseasons)
       }
-      m <- CausalImpact(ts, pre.period, post.period, alpha=alpha, model.args=args)
+      m <- CausalImpact(ts, pre.period, post.period, alpha=alpha, model.args=args, treatment.end=treatment.end)
       burn <- SuggestBurn(0.1, m$model$bsts.model)
       b <- sum(apply(m$model$bsts.model$coefficients[-(1:burn),], 2, CMean))
       betas[i+1, "SD"] <- sd
@@ -852,6 +860,7 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
     geom_line(aes(y=Predicted, colour = "Expected"), size=1.2) +
     theme_bw() + theme(legend.title = element_blank()) + ylab("") + xlab("") +
     geom_vline(xintercept=as.numeric(MatchingEndDate), linetype=2) +
+    geom_vline(xintercept=as.numeric(as.Date(treatment.end)), linetype=2) +
     scale_y_continuous(labels = scales::comma, limits=c(ymin, ymax)) +
     ggtitle(paste0("Test Market: ",test_market))
   avp$test_market <- NULL
@@ -870,6 +879,7 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
     geom_line() +
     theme_bw() + theme(legend.title = element_blank(), axis.title.x = element_blank()) + ylab("") + xlab("Date") +
     geom_vline(xintercept=as.numeric(MatchingEndDate), linetype=2) +
+    geom_vline(xintercept=as.numeric(as.Date(treatment.end)), linetype=2) +
     scale_y_continuous(labels = scales::comma, limits=c(ymin, ymax))
 
   if(analyze_betas==TRUE){
@@ -925,7 +935,7 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
                  PlotActuals=results[[12]], PlotPriorLevelSdAnalysis=results[[14]],
                  PlotLocalLevel=results[[15]], TestData=y, ControlData=ref, PlotResiduals=results[[16]],
                  TestName=test_market, ControlName=control_market, ZooData=ts, Predictions=avp,
-                 CausalImpactObject=impact, Coefficients=avg_coeffs)
+                 CausalImpactObject=impact, Coefficients=avg_coeffs, TotalResponseData=total.response.data)
   class(object) <- "matched_market_inference"
   return (object)
 }
