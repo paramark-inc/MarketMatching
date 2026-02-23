@@ -767,7 +767,7 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
   cat(paste0("\tMatching (pre) Period End Date: ", MatchingEndDate, "\n"))
   cat(paste0("\tPost Period Start Date: ", post_period_start_date, "\n"))
   if (is.null(treatment.end)){
-    cat(paste0("\tEnd of Treatment Period: ", reatment.end, "\n"))
+    cat(paste0("\tEnd of Treatment Period: ", treatment.end, "\n"))
   }
   cat(paste0("\tPost Period End Date: ", post_period_end_date, "\n"))
   cat("\n")
