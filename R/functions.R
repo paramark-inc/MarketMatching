@@ -935,7 +935,7 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
                  PlotActuals=results[[12]], PlotPriorLevelSdAnalysis=results[[14]],
                  PlotLocalLevel=results[[15]], TestData=y, ControlData=ref, PlotResiduals=results[[16]],
                  TestName=test_market, ControlName=control_market, ZooData=ts, Predictions=avp,
-                 CausalImpactObject=impact, Coefficients=avg_coeffs, TotalResponseData=total.response.data)
+                 CausalImpactObject=impact, Coefficients=avg_coeffs)
   class(object) <- "matched_market_inference"
   return (object)
 }
