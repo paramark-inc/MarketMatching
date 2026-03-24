@@ -769,7 +769,7 @@ inference <- function(matched_markets=NULL, bsts_modelargs=NULL, test_market=NUL
   if (is.null(treatment.end)){
     cat(paste0("\tEnd of Treatment Period: ", treatment.end, "\n"))
   }
-  cat(paste0("\tPost Period End Date: ", post_period_end_date, "\n"))
+  cat(paste0("\tPost Period End Date: ", treatment.end, "\n"))
   cat("\n")
   cat(paste0("\tbsts parameters: \n"))
   modelparms <- names(bsts_modelargs)
